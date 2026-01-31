@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        input { padding: 5px; font-size: 16px; }
+        button { padding: 5px 10px; font-size: 16px; margin: 5px; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin: 5px 0; }
+        .correct { color: green; }
+        .wrong-position { color: yellow; }
+        .not-in { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔢 Number Guessing Game</h1>
+
+    {% if not game %}
+        <h3>Select Difficulty</h3>
+        <form method="post">
+            <button name="difficulty" value="easy">Easy (3 digits, 8 guesses)</button>
+            <button name="difficulty" value="medium">Medium (5 digits, 6 guesses)</button>
+            <button name="difficulty" value="hard">Hard (6 digits, 5 guesses)</button>
+        </form>
+
+    {% else %}
+        <p>Difficulty: {{ game.difficulty.capitalize() }}</p>
+        <p>Guesses used: {{ game.guesses_used }} / {{ game.max_guesses }}</p>
+
+        {% if game.won %}
+            <h2>🎉 You won! Secret number: {{ game.secret | join('') }}</h2>
+            <form method="post">
+                <button name="difficulty" value="{{ game.difficulty }}">Play Again</button>
+            </form>
+        {% elif game.guesses_used >= game.max_guesses %}
+            <h2>💀 Game Over! Secret number: {{ game.secret | join('') }}</h2>
+            <form method="post">
+                <button name="difficulty" value="{{ game.difficulty }}">Play Again</button>
+            </form>
+        {% else %}
+            <form method="post">
+                <input type="text" name="guess" placeholder="Enter {{ game.digits }} digits">
+                <button type="submit">Submit Guess</button>
+            </form>
+
+            {% if feedback %}
+                <h3>Feedback:</h3>
+                <ul>
+                    {% for i in range(feedback|length) %}
+                        {% set f = feedback[i] %}
+                        <li>
+                            Digit {{ i + 1 }} → 
+                            <span class="
+                                {% if 'correct position' in f %}correct
+                                {% elif 'wrong position' in f %}wrong-position
+                                {% elif 'Invalid' in f or 'not in number' in f %}not-in
+                                {% endif %}">
+                                {{ f }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <h3>Guess History:</h3>
+            <ul>
+                {% for g, f in game.history %}
+                    <li>
+                        {{ g }} → 
+                        {% for item in f %}
+                            <span class="
+                                {% if 'correct position' in item %}correct
+                                {% elif 'wrong position' in item %}wrong-position
+                                {% elif 'Invalid' in item or 'not in number' in item %}not-in
+                                {% endif %}">
+                                {{ item }}
+                            </span>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
